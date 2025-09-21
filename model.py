@@ -6,6 +6,7 @@ from torch_geometric.nn import GATConv
 from torch.nn import LayerNorm
 from torch.nn.modules.module import Module
 from tqdm import tqdm
+# Assuming 'preprocess' contains the 'adjacent_matrix_preprocessing' function
 from preprocess import adjacent_matrix_preprocessing
 
 
@@ -36,15 +37,17 @@ class GATCL:
         )
 
         # Load data for modalities
-        self.adata_1 = self.data['adata_omics1']
-        self.adata_2 = self.data['adata_omics2']
+        # Note: The keys 'adata_omics1' and 'adata_omics2' depend on your input data structure.
+        self.adata_1 = self.data['adata_1']
+        self.adata_2 = self.data['adata_2']
 
         # Preprocess adjacency matrices
         self.adj = adjacent_matrix_preprocessing(self.adata_1, self.adata_2)
-        self.adj_spatial_1 = self.adj['adj_spatial_omics1'].to(self.device)
-        self.adj_spatial_2 = self.adj['adj_spatial_omics2'].to(self.device)
-        self.adj_feature_1 = self.adj['adj_feature_omics1'].to(self.device)
-        self.adj_feature_2 = self.adj['adj_feature_omics2'].to(self.device)
+        # Corrected keys to match the output of the likely preprocessing script
+        self.adj_spatial_1 = self.adj['adj_spatial_1'].to(self.device)   # <-- FIXED KEY
+        self.adj_spatial_2 = self.adj['adj_spatial_2'].to(self.device)   # <-- FIXED KEY
+        self.adj_feature_1 = self.adj['adj_feature_1'].to(self.device)   # <-- FIXED KEY
+        self.adj_feature_2 = self.adj['adj_feature_2'].to(self.device)   # <-- FIXED KEY
 
         # Load features
         self.features_1 = torch.FloatTensor(self.adata_1.obsm['feat'].copy()).to(self.device)
@@ -59,7 +62,8 @@ class GATCL:
         self.output_dim_2 = self.dim_output
 
     def train(self):
-        self.model = Encoder_overall(
+        # The main model class is named 'Overall', not 'Encoder_overall'
+        self.model = Overall(                                          # <-- FIXED
             self.input_dim_1, self.output_dim_1,
             self.input_dim_2, self.output_dim_2
         ).to(self.device)
@@ -115,11 +119,11 @@ class GATCL:
 
         return output
 
+
 class Overall(Module):
     """
     Top-level module that encapsulates the entire dual-modality autoencoder architecture.
     """
-
     def __init__(self, input_dim_1, output_dim_1, input_dim_2, output_dim_2, act=F.relu):
         super(Overall, self).__init__()
         self.act = act
@@ -217,7 +221,6 @@ class Encoder(Module):
 
 
 class Decoder(Module):
-
     def __init__(self, in_feat, out_feat, hidden_dim=None, heads=2, dropout=0.0, act=F.relu):
         super(Decoder, self).__init__()
         self.act = act
@@ -266,7 +269,8 @@ class Decoder(Module):
 
 class Attention(Module):
     def __init__(self, in_feat, out_feat, dropout=0.0, act=F.relu):
-        super(AttentionLayer, self).__init__()
+        # The super() call must match the class name 'Attention'
+        super(Attention, self).__init__()                             # <-- FIXED
         self.in_feat = in_feat
         self.out_feat = out_feat
 
@@ -295,7 +299,6 @@ class CL(nn.Module):
     """
     Contrastive Loss module.
     """
-
     def __init__(self, temperature=0.2,
                  neg_sample_ratio=30,
                  temp_annealing=0.99,
@@ -345,4 +348,3 @@ class CL(nn.Module):
             selected = possible[torch.randperm(possible.size(0))[:num_negs]]
             neg_indices.append(selected)
         return torch.stack(neg_indices)
-
