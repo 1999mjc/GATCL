@@ -12,21 +12,21 @@ class GATCL:
     def __init__(self,
                  data,
                  device=torch.device('cpu'),
-                 random_seed=2025,
-                 learning_rate=0.001,
+                 seed=2025,
+                 lr=0.001,
                  weight_decay=0.00,
                  epochs=120,
                  dim_output=128,
-                 weight_factors=[0.1, 0.1, 0.1]
+                 loss_weight=[0.1, 0.1, 0.1]
                  ):
         self.data = data.copy()
         self.device = device
         self.random_seed = random_seed
-        self.learning_rate = learning_rate
+        self.learning_rate = lr
         self.weight_decay = weight_decay
         self.epochs = epochs
         self.dim_output = dim_output
-        self.weight_factors = weight_factors
+        self.weight_factors = loss_weight
 
         self.CLloss = CL(
             temperature=0.01,
@@ -303,4 +303,5 @@ class CL(nn.Module):
             selected = possible[torch.randperm(possible.size(0))[:num_negs]]
             neg_indices.append(selected)
         return torch.stack(neg_indices)
+
 
