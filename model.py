@@ -6,7 +6,7 @@ from torch_geometric.nn import GATConv
 from torch.nn import LayerNorm
 from torch.nn.modules.module import Module
 from tqdm import tqdm
-from preprocess import adjacent_matrix_preprocessing
+from preprocess import process_adjacency_matrices
 
 class GATCL:
     def __init__(self,
@@ -35,7 +35,7 @@ class GATCL:
         )
         self.adata_1 = self.data['adata_1']
         self.adata_2 = self.data['adata_2']
-        self.adj = adjacent_matrix_preprocessing(self.adata_1, self.adata_2)
+        self.adj = process_adjacency_matrices(self.adata_1, self.adata_2)
         self.adj_spatial_1 = self.adj['adj_spatial_1'].to(self.device)   
         self.adj_spatial_2 = self.adj['adj_spatial_2'].to(self.device)   
         self.adj_feature_1 = self.adj['adj_feature_1'].to(self.device)   
@@ -303,6 +303,7 @@ class CL(nn.Module):
             selected = possible[torch.randperm(possible.size(0))[:num_negs]]
             neg_indices.append(selected)
         return torch.stack(neg_indices)
+
 
 
 
