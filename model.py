@@ -21,7 +21,7 @@ class GATCL:
                  ):
         self.data = data.copy()
         self.device = device
-        self.random_seed = random_seed
+        self.seed = seed
         self.learning_rate = lr
         self.weight_decay = weight_decay
         self.epochs = epochs
@@ -303,5 +303,6 @@ class CL(nn.Module):
             selected = possible[torch.randperm(possible.size(0))[:num_negs]]
             neg_indices.append(selected)
         return torch.stack(neg_indices)
+
 
 
