@@ -17,16 +17,16 @@ class GATCL:
                  weight_decay=0.00,
                  epochs=120,
                  dim_output=128,
-                 loss_weight=[0.1, 0.1, 0.1]
+                 loss_weight=[0.1,0.1, 0.1] # example
                  ):
         self.data = data.copy()
         self.device = device
         self.seed = seed
-        self.learning_rate = lr
+        self.lr = lr
         self.weight_decay = weight_decay
         self.epochs = epochs
         self.dim_output = dim_output
-        self.weight_factors = loss_weight
+        self.loss_weight = loss_weight
 
         self.CLloss = CL(
             temperature=0.01,
@@ -56,7 +56,7 @@ class GATCL:
             self.input_dim_2, self.output_dim_2
         ).to(self.device)
 
-        self.optimizer = torch.optim.Adam(self.model.parameters(), self.learning_rate,
+        self.optimizer = torch.optim.Adam(self.model.parameters(), self.lr,
                                           weight_decay=self.weight_decay)
         for epoch in tqdm(range(self.epochs)):
             self.model.train()
@@ -68,9 +68,9 @@ class GATCL:
             loss_recon_1 = F.mse_loss(self.features_1, results['emb_recon_1'])
             loss_recon_2 = F.mse_loss(self.features_2, results['emb_recon_2'])
             loss_cl = self.CLloss(results['emb_latent_1'], results['emb_latent_2'])
-            loss = (self.weight_factors[0] * loss_recon_1 +
-                    self.weight_factors[1] * loss_recon_2 +
-                    self.weight_factors[2] * loss_cl)
+            loss = (self.loss_weight[0] * loss_recon_1 +
+                    self.loss_weight[1] * loss_recon_2 +
+                    self.loss_weight[2] * loss_cl)
 
             if epoch % 10 == 0:
                 print(f"Epoch {epoch + 1}/{self.epochs}, Loss: {loss.item():.4f}")
@@ -303,6 +303,7 @@ class CL(nn.Module):
             selected = possible[torch.randperm(possible.size(0))[:num_negs]]
             neg_indices.append(selected)
         return torch.stack(neg_indices)
+
 
 
 
