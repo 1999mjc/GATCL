@@ -6,7 +6,7 @@ from torch_geometric.nn import GATConv
 from torch.nn import LayerNorm
 from torch.nn.modules.module import Module
 from tqdm import tqdm
-from preprocess import adjacent_matrix_preprocessing  # 假设您有这个预处理文件
+from preprocess import adjacent_matrix_preprocessing
 
 
 class GATCL:
@@ -345,3 +345,4 @@ class CL(nn.Module):
             selected = possible[torch.randperm(possible.size(0))[:num_negs]]
             neg_indices.append(selected)
         return torch.stack(neg_indices)
+
