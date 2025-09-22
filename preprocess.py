@@ -18,17 +18,6 @@ def build_graphs(adata_1, adata_2, n_neighbors=10):
     adata_2.obsm['adj_feature'] = adj_feature_2
     data = {'adata_1': adata_1, 'adata_2': adata_2}
     return data
-
-def clr_normalize_each_cell(adata, inplace=True):
-    def seurat_clr(x):
-        s = np.sum(np.log1p(x[x > 0]))
-        exp_val = np.exp(s / len(x))
-        return np.log1p(x / exp_val)
-    adata_view = adata if inplace else adata.copy()  
-    matrix = adata_view.X.A if sp.sparse.issparse(adata_view.X) else adata_view.X
-    adata_view.X = np.apply_along_axis(seurat_clr, 1, matrix)
-    return None if inplace else adata_view
-
 def construct_feature_graphs(adata_1, adata_2, k=10, mode="connectivity", metric="correlation", include_self=False):
     adj_feature_1 = kneighbors_graph(
         adata_1.obsm['feat'], k, mode=mode, metric=metric, include_self=include_self
@@ -100,4 +89,5 @@ def process_adjacency_matrices(adata_1, adata_2):
     }
     
     return processed_adjs
+
 
