@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="model.png" width="200" alt="GATCL Logo">
+  <img src="https://github.com/1999mjc/GATCL/model.png" width="200" alt="GATCL Logo">
 </p>
 
 ## Table of Contents
