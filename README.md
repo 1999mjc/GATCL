@@ -8,8 +8,13 @@ Spatial domain identification is an essential task to reveal spatial heterogenei
 
 
 ## Installation Requirements
+```txt
+conda install -n envn python==3.8
+conda activate envn
+```
 
 ```txt
+pip install xxx==xxx
 python=3.8
 numpy=1.24.3
 pandas=2.0.3
