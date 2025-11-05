@@ -25,7 +25,7 @@ torch=2.4.1
 anndata=0.9.2
 matplotlib=3.7.5
 ```
-## Example
+## Running Example
 ```txt
 example.py
 ```
