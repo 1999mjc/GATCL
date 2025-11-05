@@ -1,9 +1,8 @@
 <p align="center">
-  <img width="60%" src="https://github.com/1999mjc/GATCL/blob/main/Fig.png">
+  <img width="80%" src="https://github.com/1999mjc/GATCL/blob/main/Fig.png">
 </p>
 
-## Table of Contents
-- [Installation](#installation)
+## Environment
 - ```shell
 $ conda create -n gatcl python==3.8
 ```
