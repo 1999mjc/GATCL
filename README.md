@@ -27,5 +27,5 @@ matplotlib=3.7.5
 ```
 ## Running Example
 ```txt
-example.py
+you can run example.py to get a quick example with your data.
 ```
