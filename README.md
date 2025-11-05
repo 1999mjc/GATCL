@@ -4,8 +4,16 @@
 
 ## Table of Contents
 - [Installation](#installation)
-- [Data Preparation](#data-preparation)
-- [Quick Start: Minimal Example](#quick-start-minimal-example)
+- ```shell
+$ conda create -n gatcl python==3.8
+```
+- ```shell
+$ conda activate gatcl
+```
+- ```shell
+$ pip install 
+```
+- [Quick Start: example.py](#quick-start-minimal-example)
 - [Full Reproduction](#full-reproduction)
 - [Code Structure](#code-structure)
 - [Citation](#citation)
