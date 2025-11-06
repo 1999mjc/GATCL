@@ -50,13 +50,13 @@ def compute_scores(true, pred):
         "ARI": adjusted_rand_score(true, pred)
     }
 def run_example():
-    """Runs the full GATCL workflow: data loading, preprocessing, training, mclust clustering, and metric calculation."""
+    """Runs the full GATCL workflow: data loading, preprocessing, training, clustering, and metric calculation."""
     
     # 2. Define Data Paths and Hyperparameters
     RNA_DATA_PATH = "./data/RNA_data.h5ad" # Path to the RNA data file
     PROT_DATA_PATH = "./data/PROT_data.h5ad" # Path to the Protein/ATAC data file
     K_NEIGHBORS = 10 # K-Nearest Neighbors used for graph construction
-    TARGET_CLUSTERS = 10 # Target number of clusters for mclust (matching ground truth categories)
+    TARGET_CLUSTERS = 10 # Target number of clusters
     
     print(f"--- Running GATCL Real Data Example ---")
 
