@@ -5,6 +5,8 @@ import h5py
 import anndata as ad
 import scanpy as sc
 import matplotlib.pyplot as plt
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 # --- Import necessary evaluation metrics (Assumed to be installed) ---
 from sklearn.metrics import (
@@ -47,8 +49,6 @@ def compute_scores(true, pred):
         "NMI": normalized_mutual_info_score(true, pred),
         "ARI": adjusted_rand_score(true, pred)
     }
-
-
 def run_example():
     """Runs the full GATCL workflow: data loading, preprocessing, training, mclust clustering, and metric calculation."""
     
@@ -79,11 +79,11 @@ def run_example():
     sc.pp.highly_variable_genes(adata_rna, n_top_genes=3000)
     adata_rna = adata_rna[:, adata_rna.var['highly_variable']].copy()
     
-    # Protein/ATAC: 4. Apply CLR normalization
+    # Protein:  Apply CLR normalization
     clr_normalize_each_cell(adata_prot)
     
-    # 5. Apply PCA for final feature generation (20 components used for the model)
-    PCA_COMPONENTS = 20
+    # 5. Apply PCA for final feature generation 
+    PCA_COMPONENTS = 20  ##choose the proper number
     sc.tl.pca(adata_rna, n_comps=PCA_COMPONENTS)
     sc.tl.pca(adata_prot, n_comps=PCA_COMPONENTS)
     
@@ -116,10 +116,14 @@ def run_example():
     output = trainer.train()
     final_embedding = output['embedding']
     
-    # 5. Save embedding result (for external use/mclust input)
+    # 5. Save embedding result
     np.save("combine_embedding.npy", final_embedding)
+    np.save(" alpha_1.npy", results['alpha_1'])
+    np.save(" alpha_2.npy", results['alpha_2'])
+    np.save(" alpha_cross.npy", results['alpha_cross'])
+   
 
-    # --- Clustering and Evaluation (Using mclust via rpy2) ---
+    # --- Clustering and Evaluation
     print("\n--- Starting mclust Clustering and Metric Calculation ---")
 
     # A. Extract Ground Truth Labels (Assumes annotation.csv exists)
@@ -164,6 +168,51 @@ def run_example():
           print(f"{metric}: {score:.4f}")
     print("----------------------")
 
+    #E. violin picture
+     alpha_omics1 = np.load("alpha_omics1.npy")                          
+     alpha_omics1 = pd.DataFrame(alpha_omics1)                          
+     df_all = pd.concat([alpha_omics1,df],axis=1)                     
+     df_all.drop(columns=['Barcode'], inplace=True)                     
+     df_all.columns.values[0:3] = ['spatial_weight', 'omics_weight','cluster_label']
+
+     # Step 0: Ensure cluster_label is integer and sort by it
+     df_all['cluster_label'] = df_all['cluster_label'].astype(int)      
+     df_all = df_all.sort_values('cluster_label')                      
+
+     # Step 1: Convert to long format suitable for plotting
+     df_rna = df_all.melt(id_vars='cluster_label',                     
+                     value_vars=['spatial_weight', 'omics_weight'], 
+                     var_name='Modality',                         
+                     value_name='Weight')                         
+
+     # Step 2: Rename Modality names for friendlier display
+     modality_map = {                                                  
+    'spatial_weight': 'Spatial graph',
+    'omics_weight': 'Feature graph'
+     }
+     df_rna['Modality'] = df_rna['Modality'].map(modality_map)         
+
+     # Step 3: Set plotting style
+     sns.set(style="whitegrid")                                       
+
+     # Step 4: Create plotting object
+     plt.figure(figsize=(6, 4))                                         
+
+     # Step 5: Draw violin plot
+     sns.violinplot(data=df_rna,                                       
+               x='cluster_label', y='Weight',                    
+               hue='Modality',                                     
+               split=True,                                        
+               inner='quartile',                                   
+               palette=['#1f77b4', '#ff7f0e'])                     
+     plt.title("Modality weight (RNA)", fontsize=14, weight='bold')     
+     plt.xlabel("")                                                    
+     plt.ylabel("")                                                  
+     plt.legend(title='', loc='lower center', bbox_to_anchor=(0.5, -0.25), ncol=2, fontsize=12) 
+     plt.tight_layout()                                                 
+     plt.savefig("xxx.png", dpi=300)                                   
+     plt.show()  
+     
 
 if __name__ == "__main__":
     # Ensure all auxiliary functions (like GATCL_Trainer, build_graphs, etc.) are imported or defined before running
