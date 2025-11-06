@@ -28,7 +28,7 @@ class GATCL:
                  weight_decay=0.00,
                  epochs=120,
                  dim_output=128,
-                 loss_weight=[0.1, 0.1, 0.1]  # Loss weights: [recon_1, recon_2, cl_loss]
+                 loss_weight=[0.4, 0.4, 0.4]  # Loss weights: [recon_1, recon_2, cl_loss]
                  ):
         # Copy data to prevent modification of the original AnnData object
         self.data = data.copy()
@@ -377,36 +377,82 @@ class Attention(Module):
 
 
 class CL(nn.Module):
-    """
-    Contrastive Learning (CL) Loss Module.
-    Used to align multi-modal features originating from the same spatial location in the latent space.
-    """
-    def __init__(self, temperature=0.2,
+    def __init__(self, temperature=0.1,
                  neg_sample_ratio=30,
                  temp_annealing=0.99,
                  eps=1e-8):
         super(CL, self).__init__()
-        # Temperature parameter (trainable parameter)
-        self.temperature = nn.Parameter(torch.tensor(temperature))
-        # Negative sample ratio K
-        self.neg_sample_ratio = neg_sample_ratio
-        # Temperature annealing factor (if enabled)
+        # Initialize temperature as a trainable parameter.
+        self.temperature = nn.Parameter(torch.tensor(temperature)) 
+        # Store the desired ratio/number of negative samples (K).
+        self.neg_sample_ratio = neg_sample_ratio       
+        # Store the factor for temperature decay
         self.temp_annealing = temp_annealing
-        self.eps = eps
-        # Counter for temperature decay tracking (registered as a buffer)
-        self.register_buffer('temp_update_count', torch.tensor(0))
+        # Store a small epsilon value 
+        self.eps = eps 
+        # Register a buffer to count temperature update steps (does not track gradients).
+        self.register_buffer('temp_update_count', torch.tensor(0))   
 
     def forward(self, z_i, z_j):
         """
-        z_i, z_j: Two modal representations from the same batch of samples [B, D]
+        Processes representations from two different views/modalities of the same batch.
+        z_i, z_j: Representations from two modalities/views of the same batch samples [B, D].
         """
-        batch_size = z_i.size(0)
+        batch_size = z_i.size(0)                                    
 
-        # L2 Normalize feature vectors
-        z_i = F.normalize(z_i, p=2, dim=1)
-        z_j = F.normalize(z_j, p=2, dim=1)
+        # 1. L2 Normalization
+        z_i = F.normalize(z_i, p=2, dim=1)                           
+        z_j = F.normalize(z_j, p=2, dim=1)                           
+        # 2. Positive sample similarity (corresponding index)
+        pos_sim = torch.sum(z_i * z_j, dim=1)                        
+        # 3. Jointly sample negatives from non-self samples in z_i and z_j
+        # Concatenate z_i and z_j into a single pool of potential negatives [2B, D].
+        all_neg_pool = torch.cat([z_i, z_j], dim=0)    
+        # Get indices for K negative samples for each sample in the batch. Result shape: [B, K].
+        neg_indices = self._sample_negatives(batch_size, total_size=2*batch_size) 
+        # Select the negative samples from the pool. Result shape: [B, K, D].
+        z_neg = all_neg_pool[neg_indices]                            
 
-        # 1. Calculate positive sample similarity (same spot, two modalities)
+        # 4. Negative sample similarity
+        # Expand z_i to allow broadcasting with negative samples [B, 1, D].
+        z_i_exp = z_i.unsqueeze(1)
+        # Calculate similarity between z_i and all its K negative samples. Result shape: [B, K].
+        neg_sim = torch.sum(z_i_exp * z_neg, dim=-1)                 
+
+        # 5. Construct logits
+        logits = torch.cat([
+            pos_sim.unsqueeze(1),                                    
+            neg_sim                                                 
+        ], dim=1) / self.temperature                              
+
+        # 6. Labels
+        labels = torch.zeros(batch_size, dtype=torch.long, device=z_i.device) 
+
+        # 7. Contrastive Loss
+        loss = F.cross_entropy(logits, labels)                      
+
+        # 8. Temperature Annealing
+        if self.training and self.temp_annealing < 1.0:              
+            self.temp_update_count += 1                             
+            if self.temp_update_count % 100 == 0:                    
+                self.temperature.data *= self.temp_annealing         
+        return loss                                                  
+    def _sample_negatives(self, batch_size, total_size):
+        """Samples K negative samples from the 2B pool, avoiding the corresponding positive pair indices."""
+        # K is set based on self.neg_sample_ratio, ensuring it doesn't exceed available negatives.
+        num_negs = min(total_size - 2, self.neg_sample_ratio)        
+        for i in range(batch_size):
+            # Indices of the positive pair to exclude for sample i.
+            exclude = torch.tensor([i, i + batch_size], device=self.temperature.device)
+            # Create all possible indices in the pool [0, 2B-1].
+            all_indices = torch.arange(total_size, device=self.temperature.device)  
+            # Get indices that are NOT the positive pair.
+            possible = all_indices[~torch.isin(all_indices, exclude)] 
+            # Randomly select K indices from the possible ones.
+            selected = possible[torch.randperm(possible.size(0))[:num_negs]] 
+            # Collect the selected indices.
+            neg_indices.append(selected)                                               
+        return torch.stack(neg_indices)
 
 
 
