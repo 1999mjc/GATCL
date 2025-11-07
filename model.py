@@ -221,7 +221,7 @@ class Overall(Module):
 
 class Encoder(Module):
     """
-    GAT Encoder Module (3-layer GAT + Residual Connections + LayerNorm).
+    GAT Encoder Module
     """
     def __init__(self, in_feat, out_feat, hidden_dim=None, heads=2, dropout=0.0, act=F.relu):
         super(Encoder, self).__init__()
