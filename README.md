@@ -24,6 +24,19 @@ torch=2.4.1
 anndata=0.9.2
 matplotlib=3.7.5
 ```
+## Instruction
+1. `build graph.py`
+   Create spatial-based graph and feature-based graph 
+
+2. `model.py`
+   The core structure of GATCL
+   
+3. `example.py`
+   Example pipeline(Data preprocessing, model training and inference, clustering, and evaluation matrix calculation)
+   
+4. data file
+   Example data for example.py
+
 ## Running Example
 ```txt
 you can run example.py to get a quick example.
