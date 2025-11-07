@@ -13,7 +13,6 @@ import torch.nn.functional as F
 from torch.nn import Module, LayerNorm, Parameter, init  # Ensure these base classes are imported
 from tqdm import tqdm
 import torch.nn as nn
-# Assumed dependencies: GATConv, process_adjacency_matrices, CL, Overall
 
 class GATCL:
     """
