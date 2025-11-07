@@ -46,10 +46,11 @@ def compute_scores(true, pred):
         "NMI": normalized_mutual_info_score(true, pred),
         "ARI": adjusted_rand_score(true, pred)
     }
+    
 def run_example():
     """Runs the full GATCL workflow: data loading, preprocessing, training, clustering, and metric calculation."""
     
-    # Define Data Paths and Hyperparameters
+    # We selected some data from the human placenta dataset as an example
     RNA_DATA_PATH = "./data/RNA_data.h5ad" # Path to the RNA data file
     PROT_DATA_PATH = "./data/PROT_data.h5ad" # Path to the Protein/ATAC data file
     K_NEIGHBORS = 10 # K-Nearest Neighbors used for graph construction
@@ -142,7 +143,7 @@ def run_example():
 
      # 5. Execute Mclust clustering
      # Define the desired number of clusters (K).
-     K <- 10 
+     K <- n # choose a value you want 
      # Print a message about the start of clustering, including the value of K.
      cat(paste(" Mclust clustering，K =", K, "...\n"))
 
