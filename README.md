@@ -14,8 +14,7 @@ conda activate envn
 ```
 
 ```txt
-pip install xxx==xxx
-python=3.8
+pip install package_name==version
 numpy=1.24.3
 pandas=2.0.3
 scanpy=1.9.8
