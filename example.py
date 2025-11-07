@@ -118,7 +118,7 @@ def run_example():
     # np.save(" alpha_cross.npy", results['alpha_cross'])
     np.savetxt("embedding.csv", embedding, delimiter=",",  fmt='%.6f')
     ########################################################################################
-    # --- Clustering(use R)
+    # --- Clustering(RStudio)
     # Define the path to the input data file.
     data_file <- "embedding.csv"
 
