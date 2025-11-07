@@ -50,7 +50,7 @@ def compute_scores(true, pred):
 def run_example():
     """Runs the full GATCL workflow: data loading, preprocessing, training, clustering, and metric calculation."""
     
-    # We selected some data from the human placenta dataset as an example
+    #  example data
     RNA_DATA_PATH = "./data/RNA_data.h5ad" # Path to the RNA data file
     PROT_DATA_PATH = "./data/PROT_data.h5ad" # Path to the Protein/ATAC data file
     K_NEIGHBORS = 10 # K-Nearest Neighbors used for graph construction
