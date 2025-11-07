@@ -13,10 +13,6 @@ from sklearn.metrics import (
     homogeneity_score, mutual_info_score, v_measure_score,
     adjusted_mutual_info_score, normalized_mutual_info_score, adjusted_rand_score
 )
-# --- Rpy2 Imports (Used for mclust clustering) ---
-import rpy2.robjects as robjects
-import rpy2.robjects.numpy2ri
-rpy2.robjects.numpy2ri.activate()
 
 def clr_normalize_each_cell(adata, inplace=True):
     """Normalize count vector for each cell, using Seurat's CLR method."""
@@ -82,7 +78,7 @@ def run_example():
     clr_normalize_each_cell(adata_prot)
     
     # 5. Apply PCA for final feature generation 
-    PCA_COMPONENTS = 20  ##choose the proper number
+    PCA_COMPONENTS = adt_adata.n_vars-1  ##choose the proper number
     sc.tl.pca(adata_rna, n_comps=PCA_COMPONENTS)
     sc.tl.pca(adata_prot, n_comps=PCA_COMPONENTS)
     
@@ -141,7 +137,7 @@ def run_example():
 
      # 4. Read the data
      # Print a message indicating data reading is in progress.
-     cat("正在读取数据...\n")
+     cat("reading data...\n")
      # Read the data into an R data frame. header=FALSE indicates no header, sep="," uses comma as delimiter.
      data_for_clustering <- read.csv(data_file, header=FALSE, sep=",")
 
@@ -149,7 +145,7 @@ def run_example():
      # Define the desired number of clusters (K).
      K <- 10 
      # Print a message about the start of clustering, including the value of K.
-     cat(paste("开始 Mclust 聚类，K =", K, "...\n"))
+     cat(paste(" Mclust clustering，K =", K, "...\n"))
 
      # Execute the clustering process using Mclust (Gaussian Mixture Models).
      # G = K sets the number of components. modelNames = "EEE" specifies an ellipsoidal model with equal shape and equal orientation.
@@ -157,11 +153,11 @@ def run_example():
 
      # 6. Output and save clustering results
      # Print a confirmation message.
-     cat("Mclust finished！\n\n")
+     cat("Mclust finishe!\n\n")
 
      # View summary information (optional, for checking results)
      # Display a summary of the Mclust results.
-    summary(mclust_result)
+     summary(mclust_result)
 
      # Extract the resulting cluster assignments (labels) into a vector.
      cluster_labels <- mclust_result$classification
@@ -189,7 +185,7 @@ def run_example():
     # Load the ground truth annotations from an Excel file.
     annotation = pd.read_excel(
     # Specify the full path to the annotation file.
-           "cell_type.xlsx"
+           "./data/annotiation_demo.xlsx"
     )
 
     # Extract true labels (ground truth) from the 'manual' column of the annotation DataFrame.
@@ -206,11 +202,11 @@ def run_example():
     df_scores = pd.DataFrame(list(scores_gatcl.items()), columns=['Metric', 'Score'])
 
     # Save the calculated evaluation metrics to an Excel file.
-    df_scores.to_excel(
-    # Specify the output path and filename for the results.
-            "GATCL_result.xlsx",
-       index=False
-     )
+    # df_scores.to_excel(
+    # # Specify the output path and filename for the results.
+    #         "GATCL_result.xlsx",
+    #    index=False
+    #  )
     # Print a header for the evaluation metrics in the console.
     # Iterate through the dictionary of scores to print each metric and its value.
     for metric, score in scores_gatcl.items():
