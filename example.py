@@ -51,10 +51,10 @@ def run_example():
     """Runs the full GATCL workflow: data loading, preprocessing, training, clustering, and metric calculation."""
     
     #  example data
-    RNA_DATA_PATH = "./data/RNA_data.h5ad" # Path to the RNA data file
-    PROT_DATA_PATH = "./data/PROT_data.h5ad" # Path to the Protein/ATAC data file
-    K_NEIGHBORS = 10 # K-Nearest Neighbors used for graph construction
-    TARGET_CLUSTERS = 10 # Target number of clusters
+    RNA_DATA_PATH = "./data/rna_demo.h5ad" # Path to the RNA data file
+    PROT_DATA_PATH = "./data/atac_demo.h5ad" # Path to the Protein/ATAC data file
+    K_NEIGHBORS = N # K-Nearest Neighbors used for graph construction
+    TARGET_CLUSTERS = C # Target number of clusters
     # Load Data
     try:
         adata_rna = sc.read_h5ad(RNA_DATA_PATH)
@@ -113,9 +113,9 @@ def run_example():
     
     # 5. Save embedding result
     np.save("combine_embedding.npy", final_embedding)
-    np.save(" alpha_1.npy", results['alpha_1'])
-    np.save(" alpha_2.npy", results['alpha_2'])
-    np.save(" alpha_cross.npy", results['alpha_cross'])
+    # np.save(" alpha_1.npy", results['alpha_1'])
+    # np.save(" alpha_2.npy", results['alpha_2'])
+    # np.save(" alpha_cross.npy", results['alpha_cross'])
     np.savetxt("embedding.csv", embedding, delimiter=",",  fmt='%.6f')
     ########################################################################################
     # --- Clustering(use R)
