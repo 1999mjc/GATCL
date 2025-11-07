@@ -40,7 +40,7 @@ def build_graphs(adata_1, adata_2, n_neighbors=10):
 
 
 # Docstring: Construct feature-similarity k-NN graphs
-def construct_feature_graphs(adata_1, adata_2, k=10, mode="connectivity", metric="correlation", include_self=False):
+def construct_feature_graphs(adata_1, adata_2, k=9, mode="connectivity", metric="correlation", include_self=False):
     """
     Constructs feature k-NN graphs for two omics using their 'feat' representations.
     
@@ -58,7 +58,7 @@ def construct_feature_graphs(adata_1, adata_2, k=10, mode="connectivity", metric
 
 
 # Docstring: Construct k-NN spatial graph from coordinates
-def construct_spatial_graph(positions, n_neighbors=6):
+def construct_spatial_graph(positions, n_neighbors=3):
     """
     Constructs a spatial k-NN graph based on Euclidean distance between coordinates.
     Returns the graph as a Pandas DataFrame (Edge List format).
