@@ -7,6 +7,8 @@ import scanpy as sc
 import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib.pyplot as plt
+from build_graph import *
+from model import *
 
 # --- Import necessary evaluation metrics (Assumed to be installed) ---
 from sklearn.metrics import (
