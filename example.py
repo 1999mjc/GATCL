@@ -47,15 +47,12 @@ def compute_scores(true, pred):
 def run_example():
     """Runs the full GATCL workflow: data loading, preprocessing, training, clustering, and metric calculation."""
     
-    # 2. Define Data Paths and Hyperparameters
+    # Define Data Paths and Hyperparameters
     RNA_DATA_PATH = "./data/RNA_data.h5ad" # Path to the RNA data file
     PROT_DATA_PATH = "./data/PROT_data.h5ad" # Path to the Protein/ATAC data file
     K_NEIGHBORS = 10 # K-Nearest Neighbors used for graph construction
     TARGET_CLUSTERS = 10 # Target number of clusters
-    
-    print(f"--- Running GATCL Real Data Example ---")
-
-    # 1. Load Data
+    # Load Data
     try:
         adata_rna = sc.read_h5ad(RNA_DATA_PATH)
         adata_prot = sc.read_h5ad(PROT_DATA_PATH)
@@ -103,7 +100,7 @@ def run_example():
     trainer = GATCL_Trainer(
         data=data_pkg,
         device=device,
-        epochs=100, 
+        epochs=120, 
         dim_output=64 # Latent embedding dimension
     )
     
@@ -179,7 +176,7 @@ def run_example():
         )
 ##########################################################################################################################
     
-     # Load the predicted cluster labels saved from the R script (or previous step).
+    # Load the predicted cluster labels saved from the R script (or previous step).
     labels = pd.read_csv('mclust_classification_results_R.csv')
 
     # Load the ground truth annotations from an Excel file.
