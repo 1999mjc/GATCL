@@ -38,15 +38,6 @@ def clr_normalize_each_cell(adata, inplace=True):
     )
     return adata 
 
-def mclust_R(adata, num_cluster, modelNames='EEE', used_obsm='emb_pca', random_seed=2020):
-    """Perform clustering using `mclust` algorithm."""
-    robjects.r.library("mclust")
-    robjects.r['set.seed'](random_seed)
-    res = robjects.r['Mclust'](rpy2.robjects.numpy2ri.numpy2rpy(adata.obsm[used_obsm]), num_cluster, modelNames)
-    adata.obs['mclust'] = np.array(res[-2]).astype('int')
-    return adata
-
-
 def compute_scores(true, pred):
     """Calculates all supervised clustering evaluation metrics."""
     return {
