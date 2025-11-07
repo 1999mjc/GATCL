@@ -6,7 +6,7 @@ from torch_geometric.nn import GATConv
 from torch.nn import LayerNorm
 from torch.nn.modules.module import Module
 from tqdm import tqdm
-from preprocess import process_adjacency_matrices
+from build_graph import process_adjacency_matrices
 
 import torch
 import torch.nn.functional as F
