@@ -34,7 +34,7 @@ matplotlib=3.7.5
 3. `example.py`
    Example pipeline(Data preprocessing, model training and inference, clustering, and evaluation matrix calculation)
    
-4. data file
+4. `data file`
    Example data for example.py
 
 ## Running Example
