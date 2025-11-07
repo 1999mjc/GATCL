@@ -14,10 +14,9 @@ from sklearn.metrics import (
     adjusted_mutual_info_score, normalized_mutual_info_score, adjusted_rand_score
 )
 # --- Rpy2 Imports (Used for mclust clustering) ---
-from rpy2.robjects.conversion import localconverter 
-import rpy2.robjects as ro
-import rpy2.robjects.numpy2ri as rpynp 
-from rpy2.robjects.packages import importr
+import rpy2.robjects as robjects
+import rpy2.robjects.numpy2ri
+rpy2.robjects.numpy2ri.activate()
 
 def clr_normalize_each_cell(adata, inplace=True):
     """Normalize count vector for each cell, using Seurat's CLR method."""
@@ -37,7 +36,16 @@ def clr_normalize_each_cell(adata, inplace=True):
     adata.X = np.apply_along_axis(
         seurat_clr, 1, (adata.X.A if scipy.sparse.issparse(adata.X) else np.array(adata.X))
     )
-    return adata    
+    return adata 
+
+def mclust_R(adata, num_cluster, modelNames='EEE', used_obsm='emb_pca', random_seed=2020):
+    """Perform clustering using `mclust` algorithm."""
+    robjects.r.library("mclust")
+    robjects.r['set.seed'](random_seed)
+    res = robjects.r['Mclust'](rpy2.robjects.numpy2ri.numpy2rpy(adata.obsm[used_obsm]), num_cluster, modelNames)
+    adata.obs['mclust'] = np.array(res[-2]).astype('int')
+    return adata
+
 
 def compute_scores(true, pred):
     """Calculates all supervised clustering evaluation metrics."""
@@ -121,98 +129,102 @@ def run_example():
     np.save(" alpha_1.npy", results['alpha_1'])
     np.save(" alpha_2.npy", results['alpha_2'])
     np.save(" alpha_cross.npy", results['alpha_cross'])
-   
+    np.savetxt("embedding.csv", embedding, delimiter=",",  fmt='%.6f')
+    ########################################################################################
+    # --- Clustering(use R)
+    # Define the path to the input data file.
+    data_file <- "embedding.csv"
 
-    # --- Clustering and Evaluation
-    print("\n--- Starting mclust Clustering and Metric Calculation ---")
+     # 2. Install and load necessary R packages (if not already installed)
+     # Check if the 'mclust' package is installed.
+     if (!requireNamespace("mclust", quietly = TRUE)) {
+      # If not installed, install the package.
+        install.packages("mclust")
+       }
+     # Load the 'mclust' library for model-based clustering.
+     library(mclust)
 
-    # A. Extract Ground Truth Labels (Assumes annotation.csv exists)
-    try:
-        annotation = pd.read_csv("annotation.csv")
-        annotation.set_index("Barcode", inplace=True)
-    except FileNotFoundError:
-        print("ERROR: Ground truth file annotation.csv not found. Cannot calculate metrics.")
-        return
+     # 3. Set a random seed to ensure reproducible results
+     # Set a specific seed for random number generation.
+     set.seed(2020) 
 
-    # Extract Spot names as index for matching
-    barcodes = adata_prot.obs_names 
+     # 4. Read the data
+     # Print a message indicating data reading is in progress.
+     cat("正在读取数据...\n")
+     # Read the data into an R data frame. header=FALSE indicates no header, sep="," uses comma as delimiter.
+     data_for_clustering <- read.csv(data_file, header=FALSE, sep=",")
+
+     # 5. Execute Mclust clustering
+     # Define the desired number of clusters (K).
+     K <- 10 
+     # Print a message about the start of clustering, including the value of K.
+     cat(paste("开始 Mclust 聚类，K =", K, "...\n"))
+
+     # Execute the clustering process using Mclust (Gaussian Mixture Models).
+     # G = K sets the number of components. modelNames = "EEE" specifies an ellipsoidal model with equal shape and equal orientation.
+     mclust_result <- Mclust(data_for_clustering, G = K, modelNames = "EEE")
+
+     # 6. Output and save clustering results
+     # Print a confirmation message.
+     cat("Mclust finished！\n\n")
+
+     # View summary information (optional, for checking results)
+     # Display a summary of the Mclust results.
+    summary(mclust_result)
+
+     # Extract the resulting cluster assignments (labels) into a vector.
+     cluster_labels <- mclust_result$classification
+
+     # 2. Define the output filename
+     # Define the path for the output CSV file.
+     csv_output_file <- "mclust_classification_results_R.csv"
+
+     # 1) Convert the cluster labels vector into a single-column data frame.
+     data_to_save <- data.frame(cluster_label = cluster_labels)
+
+     # 2) Use write.csv() function to save the data frame to a CSV file.
+     # The data frame to be saved.
+     write.csv(
+     # The output file path.
+          data_to_save,
+          file = csv_output_file,
+        row.names = FALSE
+        )
+##########################################################################################################################
     
-    # Assume annotation.csv contains 'manual-anno' labels
-    # Match barcodes and extract true labels
-    true_labels = annotation.loc[barcodes, "manual-anno"].astype('category').values
+     # Load the predicted cluster labels saved from the R script (or previous step).
+    labels = pd.read_csv('mclust_classification_results_R.csv')
 
-    # B. mclust Clustering 
-    # Activate numpy to R conversion for the mclust call
-    with localconverter(ro.default_converter + rpynp.numpy2rpy):
-        mclust = importr('mclust')
-        r_embedding = rpynp.numpy2rpy(final_embedding)
-        # Fixed number of clusters G=10 (matching ground truth count)
-        mclust_result = mclust.Mclust(r_embedding, G=TARGET_CLUSTERS) 
-        r_labels = mclust_result.rx2('classification')
-        
-        # Convert R's 1-based labels to Python's 0-based labels (CRITICAL)
-        pred_labels = np.array(r_labels, dtype=int) - 1 
+    # Load the ground truth annotations from an Excel file.
+    annotation = pd.read_excel(
+    # Specify the full path to the annotation file.
+           "cell_type.xlsx"
+    )
 
-    # C. Calculate Evaluation Metrics
-    
-    # Check if label lengths and order match (CRITICAL!)
-    if len(true_labels) != len(pred_labels):
-         print("ERROR: True labels and predicted labels length mismatch. Cannot calculate metrics.")
-         return
+    # Extract true labels (ground truth) from the 'manual' column of the annotation DataFrame.
+    true_labels2 = annotation['manual']
+    # Assign predicted labels (the entire 'labels' DataFrame/single column) to pred_labels2.
+    pred_labels2 = labels  # The name corresponds to the column saved previously.
+    # Convert the Pandas DataFrame (pred_labels2) to a NumPy array.
+    pred_labels2 = pred_labels2.to_numpy()
+    # Flatten the NumPy array to ensure it is a 1D vector, which is required by clustering evaluation functions.
+    pred_labels2 = pred_labels2.flatten()  # Recommended, returns a copy.
+    # Calculate clustering evaluation scores (ARI, NMI, etc.) using the custom function.
+    scores_gatcl = compute_scores(true_labels2, pred_labels2)
+    # Convert the dictionary of scores into a Pandas DataFrame for easy saving.
+    df_scores = pd.DataFrame(list(scores_gatcl.items()), columns=['Metric', 'Score'])
 
-    metrics_result = compute_scores(true_labels, pred_labels)
-    
-    # D. Print Results
-    print("\n--- Clustering Evaluation Metrics ---")
-    for metric, score in metrics_result.items():
-          print(f"{metric}: {score:.4f}")
-    print("----------------------")
-
-    #E. violin picture
-     alpha_omics1 = np.load("alpha_omics1.npy")                          
-     alpha_omics1 = pd.DataFrame(alpha_omics1)                          
-     df_all = pd.concat([alpha_omics1,df],axis=1)                     
-     df_all.drop(columns=['Barcode'], inplace=True)                     
-     df_all.columns.values[0:3] = ['spatial_weight', 'omics_weight','cluster_label']
-
-     # Step 0: Ensure cluster_label is integer and sort by it
-     df_all['cluster_label'] = df_all['cluster_label'].astype(int)      
-     df_all = df_all.sort_values('cluster_label')                      
-
-     # Step 1: Convert to long format suitable for plotting
-     df_rna = df_all.melt(id_vars='cluster_label',                     
-                     value_vars=['spatial_weight', 'omics_weight'], 
-                     var_name='Modality',                         
-                     value_name='Weight')                         
-
-     # Step 2: Rename Modality names for friendlier display
-     modality_map = {                                                  
-    'spatial_weight': 'Spatial graph',
-    'omics_weight': 'Feature graph'
-     }
-     df_rna['Modality'] = df_rna['Modality'].map(modality_map)         
-
-     # Step 3: Set plotting style
-     sns.set(style="whitegrid")                                       
-
-     # Step 4: Create plotting object
-     plt.figure(figsize=(6, 4))                                         
-
-     # Step 5: Draw violin plot
-     sns.violinplot(data=df_rna,                                       
-               x='cluster_label', y='Weight',                    
-               hue='Modality',                                     
-               split=True,                                        
-               inner='quartile',                                   
-               palette=['#1f77b4', '#ff7f0e'])                     
-     plt.title("Modality weight (RNA)", fontsize=14, weight='bold')     
-     plt.xlabel("")                                                    
-     plt.ylabel("")                                                  
-     plt.legend(title='', loc='lower center', bbox_to_anchor=(0.5, -0.25), ncol=2, fontsize=12) 
-     plt.tight_layout()                                                 
-     plt.savefig("xxx.png", dpi=300)                                   
-     plt.show()  
-     
+    # Save the calculated evaluation metrics to an Excel file.
+    df_scores.to_excel(
+    # Specify the output path and filename for the results.
+            "GATCL_result.xlsx",
+       index=False
+     )
+    # Print a header for the evaluation metrics in the console.
+    # Iterate through the dictionary of scores to print each metric and its value.
+    for metric, score in scores_gatcl.items():
+     # Print the metric and score.
+          print(f"{metric}: {score:.4f}")  
 
 if __name__ == "__main__":
     # Ensure all auxiliary functions (like GATCL_Trainer, build_graphs, etc.) are imported or defined before running
