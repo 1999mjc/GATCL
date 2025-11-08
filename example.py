@@ -117,7 +117,7 @@ def run_example():
     np.save(" alpha_2.npy", output['alpha_2'])
     np.save(" alpha_cross.npy", output['alpha_cross'])
     np.savetxt("embedding.csv", embedding, delimiter=",",  fmt='%.6f')
-    ########################################################################################
+    ########################################################
     # --- Clustering(RStudio)
     # Define the path to the input data file.
     data_file <- "embedding.csv"
@@ -177,7 +177,7 @@ def run_example():
           file = csv_output_file,
         row.names = FALSE
         )
-##########################################################################################################################
+######################################################################
     #######calculate the evaluation metrics
     # Load the predicted cluster labels saved from the R script (or previous step).
     labels = pd.read_csv('mclust_classification_results_R.csv')
@@ -212,6 +212,45 @@ def run_example():
     for metric, score in scores_gatcl.items():
      # Print the metric and score.
           print(f"{metric}: {score:.4f}")
+        
+    #####spatial domain picture
+    # Read the corresponding AnnData, extracting spot names as the index.
+    barcodes = adata_rna.obs_names
+    # Add the cluster labels to the AnnData's observation metadata (adata_rna.obs).
+    adata_rna.obs["cluster_labels"] = labels.astype(str)  # Convert to string type for easier plotting/handling.
+
+    # Get the spatial coordinates from the AnnData object's .obsm slot.
+    coords = adata_rna.obsm["spatial"]
+
+    # Generate the base color list.
+    # Determine the number of unique clusters present in the labels.
+    num_clusters = len(np.unique(labels))
+    # Get a base colormap (tab10 is a common categorical map) with enough colors for the clusters.
+    base_cmap = plt.cm.get_cmap('tab10', num_clusters)
+    # Generate a list of color codes (RGBA tuples) from the base colormap.
+    base_colors = [base_cmap(i) for i in range(num_clusters)]
+
+    # 2. Define custom color order - adjust the index order as needed here
+    # Define a custom sequence of indices to rearrange the base colors.
+    custom_order = [1,3,2,0,6,5,4,7,8,9]  # This order can be modified as required.
+
+    # Apply the custom order to get the final list of colors used for plotting.
+    # Select and reorder colors based on the custom_order indices.
+    custom_colors = [base_colors[i] for i in custom_order]
+
+    # 3. Assign color to each point (match custom colors by cluster label)
+    # Map the custom colors to each data point based on its cluster label.
+    point_colors = [custom_colors[label] for label in labels]
+
+    # 4. Draw spatial plot (add color legend)
+    # Create a new figure object with specified size.
+    plt.figure(figsize=(6, 5))
+    # Draw the scatter plot using coordinates for position and point_colors for color.
+    plt.scatter(coords[:, 0], coords[:, 1], c=point_colors, s=30)
+    # Invert the Y-axis (a common convention in spatial transcriptomics data visualization).
+    plt.gca().invert_yaxis()
+    # Turn off the coordinate axes for a cleaner look.
+    plt.axis('off')
 
     #####  Violin picture
     # Load the NumPy array containing modality weights from the file.
