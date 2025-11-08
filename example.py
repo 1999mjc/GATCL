@@ -295,7 +295,11 @@ def run_example():
    # Step 5: Draw violin plot (Protein part)
    # Draw the violin plot using the processed long-format DataFrame.
    sns.violinplot(data=df_rna,
-
+               x='cluster_label', y='Weight',
+               hue='Modality',
+               split=True,
+               inner='quartile',
+               palette=['#1f77b4', '#ff7f0e'])
    # Set the main title of the plot. Note: Title indicates 'Protein' weights.
    plt.title("Modality weight (Protein)", fontsize=14, weight='bold')
    # Remove the X-axis title/label.
@@ -306,8 +310,6 @@ def run_example():
    plt.legend(title='', loc='lower center', bbox_to_anchor=(0.5, -0.25), ncol=2, fontsize=12)
    # Adjust plot parameters for a tight layout to prevent clipping.
    plt.tight_layout()
-   # Save the figure to a file with 300 DPI resolution.
-   plt.savefig("GATCL_xiaotiqintu_A1_Protein.png", dpi=300)
    # Display the plot window.
    plt.show()
 
