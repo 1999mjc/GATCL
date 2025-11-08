@@ -113,9 +113,9 @@ def run_example():
     
     # 5. Save embedding result
     np.save("combine_embedding.npy", final_embedding)
-    # np.save(" alpha_1.npy", results['alpha_1'])
-    # np.save(" alpha_2.npy", results['alpha_2'])
-    # np.save(" alpha_cross.npy", results['alpha_cross'])
+    np.save(" alpha_1.npy", output['alpha_1'])
+    np.save(" alpha_2.npy", output['alpha_2'])
+    np.save(" alpha_cross.npy", output['alpha_cross'])
     np.savetxt("embedding.csv", embedding, delimiter=",",  fmt='%.6f')
     ########################################################################################
     # --- Clustering(RStudio)
@@ -178,7 +178,7 @@ def run_example():
         row.names = FALSE
         )
 ##########################################################################################################################
-    
+    #######calculate the evaluation metrics
     # Load the predicted cluster labels saved from the R script (or previous step).
     labels = pd.read_csv('mclust_classification_results_R.csv')
 
@@ -211,7 +211,66 @@ def run_example():
     # Iterate through the dictionary of scores to print each metric and its value.
     for metric, score in scores_gatcl.items():
      # Print the metric and score.
-          print(f"{metric}: {score:.4f}")  
+          print(f"{metric}: {score:.4f}")
+
+    #####  Violin picture
+    # Load the NumPy array containing modality weights from the file.
+    alpha_omics1 = np.load("alpha_omics1.npy")
+    # Convert the NumPy array into a Pandas DataFrame.
+    alpha_omics1 = pd.DataFrame(alpha_omics1)
+    # Concatenate the alpha_omics1 DataFrame and the existing DataFrame 'df' column-wise.
+    df_all = pd.concat([alpha_omics1,df],axis=1)
+    # Remove the 'Barcode' column from the combined DataFrame in place.
+    df_all.drop(columns=['Barcode'], inplace=True)
+    # Rename the first three columns to represent the weights and cluster labels.
+    df_all.columns.values[0:3] = ['spatial_weight', 'omics_weight','cluster_label']
+    # Step 0: Ensure cluster_label is integer and sort by it
+    # Convert the 'cluster_label' column to integer type.
+    df_all['cluster_label'] = df_all['cluster_label'].astype(int)
+    # Sort the entire DataFrame based on the 'cluster_label' column values.
+    df_all = df_all.sort_values('cluster_label')
+
+    # Step 1: Convert to long format suitable for plotting
+    # Unpivot the DataFrame from wide to long format.
+    df_rna = df_all.melt(id_vars='cluster_label',value_vars=['spatial_weight', 'omics_weight'], var_name='Modality',
+    # Name the new column that will store the actual weight values.
+                     value_name='Weight')
+
+    # Step 2: Rename Modality names for friendlier display
+    # Define a mapping dictionary to rename modality labels.
+    modality_map = {
+       'spatial_weight': 'Spatial graph',
+       'omics_weight': 'Feature graph'
+    }
+    # Apply the mapping to the 'Modality' column in the long-format DataFrame.
+    df_rna['Modality'] = df_rna['Modality'].map(modality_map)
+
+   # Step 3: Set plotting style
+   # Set the Seaborn style to 'whitegrid' for better aesthetics.
+   sns.set(style="whitegrid")
+
+   # Step 4: Create plotting object
+   # Create a new figure with a specified size (6 inches wide, 4 inches tall).
+   plt.figure(figsize=(6, 4))
+
+   # Step 5: Draw violin plot (Protein part)
+   # Draw the violin plot using the processed long-format DataFrame.
+   sns.violinplot(data=df_rna,
+
+   # Set the main title of the plot. Note: Title indicates 'Protein' weights.
+   plt.title("Modality weight (Protein)", fontsize=14, weight='bold')
+   # Remove the X-axis title/label.
+   plt.xlabel("")
+   # Remove the Y-axis title/label.
+   plt.ylabel("")
+   # Customize the legend position (below the plot) and layout.
+   plt.legend(title='', loc='lower center', bbox_to_anchor=(0.5, -0.25), ncol=2, fontsize=12)
+   # Adjust plot parameters for a tight layout to prevent clipping.
+   plt.tight_layout()
+   # Save the figure to a file with 300 DPI resolution.
+   plt.savefig("GATCL_xiaotiqintu_A1_Protein.png", dpi=300)
+   # Display the plot window.
+   plt.show()
 
 if __name__ == "__main__":
     # Ensure all auxiliary functions (like GATCL_Trainer, build_graphs, etc.) are imported or defined before running
