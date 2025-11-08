@@ -32,7 +32,7 @@ matplotlib=3.7.5
    The core structure of GATCL
    
 3. `example.py`
-   Example pipeline(Data preprocessing, model training and inference, clustering, and evaluation matrix calculation)
+   Example pipeline(Data preprocessing, model training and inference, clustering, evaluation matrix calculation and so on)
    
 4. `data file`
    Example data for example.py
