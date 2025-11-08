@@ -27,7 +27,7 @@ class GATCL:
                  weight_decay=0.00,
                  epochs=120,
                  dim_output=128,
-                 loss_weight=[0.4, 0.4, 0.4]  # Loss weights: [recon_1, recon_2, cl_loss]
+                 loss_weight=[0.4, 0.4, 0.4]  # example loss weights: [recon_1, recon_2, cl_loss]
                  ):
         # Copy data to prevent modification of the original AnnData object
         self.data = data.copy()
