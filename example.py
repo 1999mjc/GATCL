@@ -103,8 +103,8 @@ def run_example():
     trainer = GATCL_Trainer(
         data=data_pkg,
         device=device,
-        epochs=120, 
-        dim_output=64 # Latent embedding dimension
+        epochs=120, ##example
+        dim_output=64 # example latent embedding dimension
     )
     
     # 4. Execute Training, get final embedding
