@@ -51,7 +51,7 @@ def run_example():
     
     #  example data
     RNA_DATA_PATH = "./data/human_placenta_rna" # Path to the RNA data file
-    PROT_DATA_PATH = "./data/human_placenta_protein" # Path to the Protein/ATAC data file
+    PROT_DATA_PATH = "./data/human_placenta_atac" # Path to the Protein/ATAC data file
     K_NEIGHBORS = N # K-Nearest Neighbors used for graph construction
     #TARGET_CLUSTERS = 10 # Target number of clusters
     # Load Data
