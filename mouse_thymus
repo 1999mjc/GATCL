@@ -205,13 +205,7 @@ def run_example():
     # # Specify the output path and filename for the results.
     #         "GATCL_result.xlsx",
     #    index=False
-    #  )
-    # Print a header for the evaluation metrics in the console.
-    # Iterate through the dictionary of scores to print each metric and its value.
-    for metric, score in scores_gatcl.items():
-     # Print the metric and score.
-          print(f"{metric}: {score:.4f}")
-        
+    #  )   
     #####spatial domain picture
     # Read the corresponding AnnData, extracting spot names as the index.
     barcodes = adata_rna.obs_names
