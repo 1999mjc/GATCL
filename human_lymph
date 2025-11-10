@@ -206,11 +206,6 @@ def run_example():
     #         "GATCL_result.xlsx",
     #    index=False
     #  )
-    # Print a header for the evaluation metrics in the console.
-    # Iterate through the dictionary of scores to print each metric and its value.
-    for metric, score in scores_gatcl.items():
-     # Print the metric and score.
-          print(f"{metric}: {score:.4f}")
         
     #####spatial domain picture
     # Read the corresponding AnnData, extracting spot names as the index.
@@ -231,7 +226,7 @@ def run_example():
 
     # 2. Define custom color order - adjust the index order as needed here
     # Define a custom sequence of indices to rearrange the base colors.
-    custom_order = [1,3,2,0,6,5,4,7,8,9]  # This order can be modified as required.
+    custom_order = [0,1,2,3,4,5,6,7,8,9]  # This order can be modified as required.
 
     # Apply the custom order to get the final list of colors used for plotting.
     # Select and reorder colors based on the custom_order indices.
