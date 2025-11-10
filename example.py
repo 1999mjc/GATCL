@@ -143,7 +143,7 @@ def run_example():
 
      # 5. Execute Mclust clustering
      # Define the desired number of clusters (K).
-     K <- n # choose a value you want 
+     K <- 9 # choose a value you want 
      # Print a message about the start of clustering, including the value of K.
      cat(paste(" Mclust clustering，K =", K, "...\n"))
 
@@ -232,7 +232,7 @@ def run_example():
 
     # 2. Define custom color order - adjust the index order as needed here
     # Define a custom sequence of indices to rearrange the base colors.
-    custom_order = [1,3,2,0,6,5,4,7,8,9]  # This order can be modified as required.
+    custom_order = [0,1,2,3,4,5,6,7,8]  # This order can be modified as required.
 
     # Apply the custom order to get the final list of colors used for plotting.
     # Select and reorder colors based on the custom_order indices.
