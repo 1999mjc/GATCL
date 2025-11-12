@@ -49,7 +49,7 @@ def compute_scores(true, pred):
 def run_example():
     """Runs the full GATCL workflow: data loading, preprocessing, training, clustering, and metric calculation."""
     
-    #  example data
+    # data
     RNA_DATA_PATH = "./data/mouse_spleen_rna" # Path to the RNA data file
     PROT_DATA_PATH = "./data/mouse_spleen_protein" # Path to the Protein/ATAC data file
     K_NEIGHBORS = N # K-Nearest Neighbors used for graph construction
